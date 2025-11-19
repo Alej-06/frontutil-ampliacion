@@ -35,7 +35,11 @@
           <td>{{ oBlog.fechaCreacion }}</td>
           <td>{{ oBlog.fechaModificacion }}</td>
           <td>
-            <a [routerLink]="['/blog/view', oBlog.id]" class="btn btn-info btn-sm">Ver</a>
+            <div class="btn-group btn-group-sm" role="group" aria-label="Small button group">
+              <a [routerLink]="['/blog/view', oBlog.id]" class="btn btn-outline-primary">
+                <i class="bi bi-eye"></i>
+              </a>
+            </div>
           </td>
         </tr>
         }
