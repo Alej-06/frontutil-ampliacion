@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { IPage } from '../../../model/plist';
 import { IRecurso } from '../../../model/pavon/recurso';
@@ -27,20 +27,41 @@ export class RoutedAdminPlistPavon {
   sortField: string = 'id';
   sortDirection: 'asc' | 'desc' = 'asc';
 
-  constructor(private oPavonService: PavonService) { }
+  // Mensajes y total
+  message: string | null = null;
+  totalRecords: number | null = null;
+  private messageTimeout: any = null;
+
+  constructor(private oPavonService: PavonService, private route: ActivatedRoute) { }
 
   oBotonera: string[] = [];
   orderField: string = 'id';
   orderDirection: string = 'asc';
 
   ngOnInit() {
+    const msg = this.route.snapshot.queryParamMap.get('msg');
+    if (msg) {
+      this.showMessage(msg);
+    }
     this.getPage();
   }
 
+  private showMessage(msg: string, duration: number = 4000) {
+    this.message = msg;
+    if (this.messageTimeout) {
+      clearTimeout(this.messageTimeout);
+    }
+    this.messageTimeout = setTimeout(() => {
+      this.message = null;
+      this.messageTimeout = null;
+    }, duration);
+  }
+
   getPage() {
-    this.oPavonService.getPage(this.numPage, this.numRpp).subscribe({
+    this.oPavonService.getPage(this.numPage, this.numRpp, this.orderField, this.orderDirection).subscribe({
       next: (data: IPage<IRecurso>) => {
         this.oPage = data;
+        this.totalRecords = data.totalElements;
         // si estamos en una página que supera el límite entonces nos situamos en la ultima disponible
         if (this.numPage > 0 && this.numPage >= data.totalPages) {
           this.numPage = data.totalPages - 1;
@@ -94,7 +115,7 @@ export class RoutedAdminPlistPavon {
     return false;
   }
 
-    generarFake() {
+  generarFake() {
     this.rellenaOk = null;
     this.rellenaError = null;
     this.rellenando = true;

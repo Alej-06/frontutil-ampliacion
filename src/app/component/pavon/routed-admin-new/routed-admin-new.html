@@ -61,6 +61,9 @@
               @if (url?.errors?.['minlength']) {
                 <span>La url debe tener al menos 10 caracteres.</span>
               }
+              @if (url?.errors?.['invalidUrl']) {
+                <span>La URL no tiene un formato válido (ej. https://example.com).</span>
+              }
             </div>
             }
           </div>

@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
 import { PavonService } from '../../../service/pavon/recurso';
 import { IRecurso } from '../../../model/pavon/recurso';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -36,6 +36,18 @@ export class RoutedAdminEditPavon implements OnInit {
         }
     }
 
+    // Validador custom para URL absoluta
+    private urlValidator(control: AbstractControl) {
+        const value = control.value;
+        if (!value) return null;
+        try {
+            new URL(value);
+            return null;
+        } catch {
+            return { invalidUrl: true };
+        }
+    }
+
     initForm(): void {
         this.recursoForm = this.fb.group({
             nombre: ['', [
@@ -44,7 +56,9 @@ export class RoutedAdminEditPavon implements OnInit {
                 Validators.maxLength(200)]],
             url: ['', [
                 Validators.required,
-                Validators.minLength(10)]],
+                Validators.minLength(10),
+                this.urlValidator.bind(this)
+            ]],
             publico: [false],
         });
     }
