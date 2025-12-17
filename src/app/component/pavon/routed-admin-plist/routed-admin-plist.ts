@@ -18,10 +18,20 @@ export class RoutedAdminPlistPavon {
   oPage: IPage<IRecurso> | null = null;
   numPage: number = 0;
   numRpp: number = 5;
+  rellenaCantidad: number = 10;
+  rellenando: boolean = false;
+  rellenaOk: number | null = null;
+  rellenaError: string | null = null;
+  publishingId: number | null = null;
+  publishingAction: 'publicar' | 'despublicar' | null = null;
+  sortField: string = 'id';
+  sortDirection: 'asc' | 'desc' = 'asc';
 
   constructor(private oPavonService: PavonService) { }
 
   oBotonera: string[] = [];
+  orderField: string = 'id';
+  orderDirection: string = 'asc';
 
   ngOnInit() {
     this.getPage();
@@ -43,6 +53,18 @@ export class RoutedAdminPlistPavon {
     });
   }
 
+  onOrder(order: string) {
+    if (this.orderField === order) {
+      this.orderDirection = this.orderDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.orderField = order;
+      this.orderDirection = 'asc';
+    }
+    this.numPage = 0;
+    this.getPage();
+    return false;
+  }
+
   goToPage(numPage: number) {
     this.numPage = numPage;
     this.getPage();
@@ -52,6 +74,77 @@ export class RoutedAdminPlistPavon {
   onRppChange(n: number) {
     this.numRpp = n;
     this.getPage();
+    return false;
+  }
+
+  onCantidadChange(value: string) {
+    this.rellenaCantidad = +value;
+    return false;
+  }
+
+  sortBy(field: string) {
+    if (this.sortField === field) {
+      // toggle direction
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortField = field;
+      this.sortDirection = 'asc';
+    }
+    this.getPage();
+    return false;
+  }
+
+    generarFake() {
+    this.rellenaOk = null;
+    this.rellenaError = null;
+    this.rellenando = true;
+    this.oPavonService.rellenaRecurso(this.rellenaCantidad).subscribe({
+      next: (count: number) => {
+        this.rellenando = false;
+        this.rellenaOk = count;
+        this.getPage(); // refrescamos listado
+      },
+      error: (err: HttpErrorResponse) => {
+        this.rellenando = false;
+        this.rellenaError = 'Error generando datos fake';
+        console.error(err);
+      }
+    });
+  }
+
+  publicar(id: number) {
+    this.publishingId = id;
+    this.publishingAction = 'publicar';
+    this.oPavonService.publicar(id).subscribe({
+      next: () => {
+        this.publishingId = null;
+        this.publishingAction = null;
+        this.getPage();
+      },
+      error: (err: HttpErrorResponse) => {
+        console.error(err);
+        this.publishingId = null;
+        this.publishingAction = null;
+      }
+    });
+    return false;
+  }
+
+  despublicar(id: number) {
+    this.publishingId = id;
+    this.publishingAction = 'despublicar';
+    this.oPavonService.despublicar(id).subscribe({
+      next: () => {
+        this.publishingId = null;
+        this.publishingAction = null;
+        this.getPage();
+      },
+      error: (err: HttpErrorResponse) => {
+        console.error(err);
+        this.publishingId = null;
+        this.publishingAction = null;
+      }
+    });
     return false;
   }
 }
